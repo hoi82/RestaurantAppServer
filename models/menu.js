@@ -9,7 +9,8 @@ const MenuSchema = new Schema({
     price: new Schema({
         value: {type: Schema.Types.Number},
         currency: {type: Schema.Types.String}
-    })
+    }),
+    description: {type: Schema.Types.String}
 }, {collection: "menus"});
 
 module.exports = mongoose.model("Menus", MenuSchema);

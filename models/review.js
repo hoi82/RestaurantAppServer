@@ -5,6 +5,7 @@ const ReviewSchema = new Schema({
     resID: Schema.Types.ObjectId,
     userID: Schema.Types.ObjectId,
     rating: Schema.Types.Number,
+    title: Schema.Types.String,
     comment: Schema.Types.String,
     created: Schema.Types.Date,
     edited: Schema.Types.Date,

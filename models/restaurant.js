@@ -16,6 +16,7 @@ var RestaurantSchema = new Schema({
         timeZone: String,        
         time: {type: Schema.Types.Array}
     },
+    reservation: Schema.Types.Mixed,
     contact: [ Object ],
     description: {type: String}    
 }, {collection: "restaurants"});

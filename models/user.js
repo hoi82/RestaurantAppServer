@@ -8,6 +8,7 @@ var userSchema = new Schema({
     contact: { type: String, required: true },
     address: { type: String, required: true },
     payments: [Object],
+    favorite: [{type: Schema.Types.ObjectId, unique: true, ref: "Restaurants"}],
     created: Date,
     edited: Date,
     deleted: Boolean

@@ -43,12 +43,17 @@ app.use(session({
 app.use("/static", express.static(path.resolve(__dirname, "public")));
 
 mongoose.plugin(require("mongoose-id"));
-var router = require("./routes")(app, sessionstore);
+var router = require("./routes")(app);
 
 mongoose.Promise = global.Promise;
+mongoose.set('useFindAndModify', false);
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }).then(
     () => console.log("db connected")
 ).catch((e) => console.error(e));
+
+app.use((error, req, res, next) => {    
+    res.status(error.code).json(error.message);
+});
 
 var server = app.listen(port, () => console.log(`Server is running on port ${port}`));
