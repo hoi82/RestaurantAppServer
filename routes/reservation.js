@@ -15,15 +15,16 @@ module.exports = (app = require("express")()) => {
                 const qEnd = new Date(req.params.year, req.params.month, req.params.day + 1);
                 const schedule = restaurant.opens.time[qStart.getDay()];
                 reservationInfo.cancellation = restaurant.reservation;
+                
                 Reservations.find({
                     deleted: false, 
                     start: { $gte: qStart, $lte: qEnd },
-                    resid: restaurant.id}, (err, reservations) => {
+                    resid: restaurant._id}, (err, reservations) => {
                         if (err) {                            
                             res.status(404).json(err);
                             return;
                         }
-                        else {
+                        else {                                                     
                             reservationInfo.reserved = reservations;   
                             
                             if (schedule.length > 0) {
@@ -72,7 +73,7 @@ module.exports = (app = require("express")()) => {
             if (err) {                
                 res.json(err)
             }
-            else {                              
+            else {     
                 res.json(p);
             }
         })
