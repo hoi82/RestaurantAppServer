@@ -12,8 +12,9 @@ module.exports = (app = require("express")()) => {
                 res.json(user.favorite.filter((fav, i) => fav.equals(req.params.id)).length > 0);
             }
         })
-    })
+    });
 
+    //Add Favorite
     app.post("/api/favorite/restaurant", (req, res, next) => {
         if (req.session.user) {
             User.findById(req.session.user.id, (err, user) => {
@@ -25,15 +26,27 @@ module.exports = (app = require("express")()) => {
                         next({code: 403, message: "This restaurant is already added."});
                     }
                     else {
-                        user.favorite.push(req.body.resid);
-                        user.save((err, u) => {
+                        Restaurants.findById(req.body.resid, (err, restaurant) => {
                             if (err) {
-                                next({code: 402, message: "An Error is occured in saving."})
-                            } 
-                            else {
-                                res.json(u.favorite);
+
                             }
-                        })
+                            else {
+                                user.favorite.push(req.body.resid);
+                                user.save((err, u) => {
+                                    if (err) {
+                                        next({code: 402, message: "An Error is occured in saving."})
+                                    } 
+                                    else {
+                                        res.json({
+                                            id: restaurant._id,
+                                            name: restaurant.name,
+                                            address: restaurant.address,
+                                            thumbnail: restaurant.thumbnail,
+                                        });
+                                    }
+                                })
+                            }
+                        })                        
                     }
                 }
             })
@@ -43,6 +56,7 @@ module.exports = (app = require("express")()) => {
         }   
     });
 
+    //Remove Favorite
     app.delete("/api/favorite/restaurant/:id", (req, res) => {                
         User.findByIdAndUpdate(req.session.user.id, {
             $pull: {
@@ -58,6 +72,7 @@ module.exports = (app = require("express")()) => {
         })
     });
 
+    //Favorite Restaurant Thumbnails
     app.get("/api/favorite/restaurants", (req, res, next) => {
         if (req.session.user) {    
             User.findById(req.session.user.id).populate("favorite").exec((err, user) => {                

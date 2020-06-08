@@ -2,6 +2,7 @@ module.exports = (app = require("express")()) => {
     const Restaurants = require("../models/restaurant").Restaurant;   
     const Menus = require("../models/menu");
     const Reviews = require("../models/review");
+    const Users = require("../models/user");
 
     //Get All Restaurants
     app.get("/api/restaurants", (req, res) => {
@@ -10,15 +11,16 @@ module.exports = (app = require("express")()) => {
         })
     });                
 
-    //Get Restaurant by ID include Reviews
-    app.get("/api/restaurant/:id", (req, res) => {        
-        Restaurants.findById(req.params.id).then((restaurant) => {
-            const result = restaurant.toObject();
-            Menus.find({restaurantID: restaurant._id}).then((menus) => {
-                result.menus = menus;
-                res.json(result);                
-            });
-        });        
+    //Get Restaurant by ID
+    app.get("/api/restaurant/:id", (req, res) => {                
+        Restaurants.findById(req.params.id, (err, restaurant) => {
+            if (err) {
+
+            }
+            else {
+                res.json(restaurant);
+            }
+        })
     });
 
     //Get Restaurant Thumbnail
