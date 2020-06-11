@@ -1,56 +1,41 @@
+const moment = require("moment");
+const moment_timezone = require("moment-timezone");
+
 module.exports = (app = require("express")()) => {
     const Restaurants = require("../models/restaurant").Restaurant; 
     const Reservations = require("../models/reservation");   
 
     //Get Reservations by Restaurant ID and Date
     app.get("/api/reservation/:id/:year/:month/:day", (req, res) => {
-        const reservationInfo = {};        
+        const reservationInfo = {};                
         Restaurants.findById(req.params.id, (err, restaurant) => {            
             if (err) {
                 res.status(404).json(err);
                 return;
             }
-            else {                
-                const qStart = new Date(req.params.year, req.params.month, req.params.day);
-                const qEnd = new Date(req.params.year, req.params.month, req.params.day + 1);
-                const schedule = restaurant.opens.time[qStart.getDay()];
-                reservationInfo.cancellation = restaurant.reservation;
+            else {                               
+                const qStart = moment.tz(restaurant.opens.timezone).set({
+                    year: Number(req.params.year),
+                    month: Number(req.params.month - 1),
+                    date: Number(req.params.day),
+                    hour: 0, 
+                    minute: 0,
+                    second: 0,
+                    millisecond: 0
+                });
                 
+                const qEnd = qStart.clone().set({hour:24});                          
+                reservationInfo.cancellation = restaurant.reservation;                
                 Reservations.find({
                     deleted: false, 
-                    start: { $gte: qStart, $lte: qEnd },
-                    resid: restaurant._id}, (err, reservations) => {
-                        if (err) {                            
+                    start: { $gte: qStart.utc().toDate(), $lte: qEnd.utc().toDate() },
+                    resid: restaurant._id}, (err, reservations) => {                        
+                        if (err) {
                             res.status(404).json(err);
-                            return;
                         }
-                        else {                                                     
-                            reservationInfo.reserved = reservations;   
-                            
-                            if (schedule.length > 0) {
-                                reservationInfo.open =  `${schedule[0].open[0]}:${schedule[0].open[1]} `;
-                                reservationInfo.close = `${schedule[schedule.length - 1].close[0]}:${schedule[schedule.length - 1].close[1]}`;                                
-                                if (schedule.length > 1) {
-                                    if (!reservationInfo.reserved) {
-                                        reservationInfo.reserved = [];
-                                    }
-                                    for (let i = 1; i < schedule.length; i++) {
-                                        reservationInfo.reserved.push(
-                                            {
-                                                start: new Date(req.params.year, req.params.month, req.params.day, schedule[i-1].close[0], schedule[i-1].close[1]),
-                                                end: new Date(req.params.year, req.params.month, req.params.day, schedule[i].open[0], schedule[i].open[1])
-                                            }
-                                        );                                        
-                                    }
-                                }
-                            } else {
-                                reservationInfo.open = "0:00";
-                                reservationInfo.close = "24:00";
-                                reservationInfo.reserved = [{start: "0:00", end: "24:00"}];
-                            }
-                                
-                            res.json(reservationInfo);
-                        }                        
+                        else {                            
+                            res.json(reservations);
+                        }                                               
                     }
                 )                                
             }            
@@ -74,7 +59,7 @@ module.exports = (app = require("express")()) => {
                 res.json(err)
             }
             else {     
-                res.json(p);
+                res.json(p._id);
             }
         })
     });

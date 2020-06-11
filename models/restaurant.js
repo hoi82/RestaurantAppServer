@@ -13,7 +13,7 @@ var RestaurantSchema = new Schema({
     },
     menus: {type: Schema.Types.Array, default: []},
     opens: {
-        timeZone: String,        
+        timezone : String,        
         time: {type: Schema.Types.Array}
     },
     reservation: Schema.Types.Mixed,

@@ -72,8 +72,7 @@ module.exports = (app = require("express")()) => {
     });
 
     //Edit Review
-    app.put("/api/review/:id", (req, res) => {
-        console.log("edited");
+    app.put("/api/review/:id", (req, res) => {        
         const edit = Object.assign({}, req.body, {edited: new Date()});
         Reviews.findByIdAndUpdate(req.params.id, edit, (err, rev) => {
             if (err) {

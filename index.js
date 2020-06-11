@@ -40,6 +40,16 @@ app.use(session({
     store: sessionstore
 }));
 
+// app.use([], session({
+//     secret: "blahblahbl",
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//         maxAge: 1000 * 60 * 10
+//     },
+//     store: sessionstore
+// }))
+
 app.use("/static", express.static(path.resolve(__dirname, "public")));
 
 mongoose.plugin(require("mongoose-id"));
