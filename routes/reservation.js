@@ -66,12 +66,29 @@ module.exports = (app = require("express")()) => {
 
     //Get Reservations by userID
     app.get("/api/reservation/:id", (req, res) => {        
-        Reservations.findById(req.params.id, (err, reservation) => {
+        Reservations.findOne({_id: req.params.id, deleted: false} ,"start end member message resid" ,(err, reservation) => {
             if (err) {
 
             }
             else {
-                res.json(reservation);
+                Restaurants.findById(reservation.resid, "name address", (err, restaurant) => {
+                    if (err) {
+
+                    }
+                    else {
+                        if (restaurant) {
+                            const result = {
+                                start: reservation.start,
+                                end: reservation.end,
+                                member: reservation.member,
+                                message: reservation.message,
+                                resname: restaurant.name,
+                                resaddress: restaurant.address
+                            };
+                            res.json(result);
+                        }
+                    }
+                })                
             }
         })
     });
