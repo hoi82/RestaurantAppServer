@@ -18,7 +18,8 @@ module.exports = (app = require("express")()) => {
     app.get("/api/restaurant/:id/reviews", (req, res) => {        
         Reviews.find({ resID: req.params.id, deleted: false }, [], {
             skip: Number(req.query.page) * Number(req.query.len),
-            limit: Number(req.query.len),            
+            limit: Number(req.query.len),
+            sort: "-created"            
         }, (err, reviews) => {
             const promises = reviews.map((r, i) => (r.toObject())).map((r, i) => {
                 return new Promise((resolve, reject) => {
@@ -52,7 +53,7 @@ module.exports = (app = require("express")()) => {
     //Add Review
     app.post("/api/review", (req, res) => {        
         const review = new Reviews();
-        review.resID = req.body.resId;
+        review.resID = req.body.resid;
         review.userID = req.session.user.id;
         review.rating = req.body.rating;
         review.title = req.body.title;
@@ -95,4 +96,16 @@ module.exports = (app = require("express")()) => {
             }
         })
     });
+
+    //Get Single Review
+    app.get("/api/review/:id", (req, res) => {
+        Reviews.findById(req.params.id, (err, rev) => {
+            if (err) {
+                res.status(404).json(err);
+            }
+            else {
+                res.json(rev);
+            }
+        })
+    })
 }
