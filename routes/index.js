@@ -1,5 +1,5 @@
-module.exports = (app) => {    
-    const user = require("./user")(app);
+module.exports = (app, sessionStore) => {    
+    const user = require("./user")(app, sessionStore);
     const search = require("./search")(app);
     const restaurant = require("./restaurant")(app);            
     const review = require("./review")(app); 

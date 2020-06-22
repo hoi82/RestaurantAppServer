@@ -1,4 +1,4 @@
-module.exports = (app = require("express")()) => {
+module.exports = (app = require("express")(), sessionStore = require("connect-mongodb-session")()) => {
     const User = require("../models/user");   
 
     //Get all users
@@ -13,52 +13,58 @@ module.exports = (app = require("express")()) => {
     });
 
     //Login
-    app.post("/api/users/login/", (req, res) => {                        
-        User.findOne({ email: req.body.email, password: req.body.password }, (err, user) => {
+    app.post("/api/users/login/", (req, res) => { 
+        console.log(req.body);                                      
+        User.findOne({ email: req.body.email }, (err, user) => {
             if (err) {
-                return res.status(500).json({ email: req.body.email, error: err });
-            }
+                return res.status(500).json({ error: err });
+            }            
             
             if (!user) {
-                return res.json({ email: req.body.email, error: "user not found" });
+                return res.status(404).send("user not found");
             }
+            else {
+                User.findOne({password: req.body.password}, (err, user) => {
+                    if (err) {
+                        return res.status(500).json({ error: err });
+                    }
 
-            let session = req.session;            
-            session.user = {
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                lastAccess: Date.now
-            };
-                        
-            res.json(session.user); 
+                    if (!user) {
+                        return res.status(403).send("password is not right");
+                    }
+                    else {
+                        let session = req.session;            
+                        session.user = {
+                            sid: req.sessionID,
+                            id: user.id,
+                            email: user.email,
+                            name: user.name,
+                            lastAccess: new Date()
+                        };
+                        console.log(user);                                    
+                        res.json(session.user); 
+                    }
+                })
+            }            
         });             
     });
     
-    app.post("/api/users/logout", (req, res) => {          
-        if (req.session.user) {
-            req.session.destroy((err) => {
-                if (err) {
-                    return res.json({session: false, error: err});
-                }
-                else {
-                    return res.json({session: false});
-                }                
-            });                        
+    //LogOut
+    app.get("/api/users/logout", (req, res) => {        
+        if (req.session.user) {            
+            sessionStore.destroy(req.session.user.sid);
         }
-        else {
-            res.json({ session: false });
-        }
+        res.json({session: false});             
     });
 
     //Get Session
-    app.get("/api/users/session", (req, res) => {        
+    app.get("/api/users/session", (req, res) => {                   
         if (req.session.user == undefined) {
             res.json({ session: false });
         }
         else {
             req.session.user.lastAccess = (new Date()).toUTCString();
-            res.json({ session: true, id: req.session.user.id, email: req.session.user.email, name: req.session.user.name });
+            res.json({ session: true, id: req.session.user.id, email: req.session.user.email, name: req.session.user.name, lastAccess: new Date() });
         }
     });
 

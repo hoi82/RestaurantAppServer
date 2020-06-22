@@ -9,6 +9,7 @@ var mongoDBStore = require("connect-mongodb-session")(session);
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const https = require("https");
 
 const app = express();
 const port = process.env.PORT || 3005;
@@ -20,7 +21,7 @@ const corsOption = {
 
 var sessionstore = new mongoDBStore({
     uri: process.env.MONGO_URI,
-    collection: "sessions",
+    collection: "sessions",    
 }, (err) => console.log("error : " + err));
 
 app.use(morgan("dev"));
@@ -29,15 +30,17 @@ app.use(cors(corsOption));
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 
-app.use(cookieParser());
-app.use(session({    
+// app.use(cookieParser());
+app.use(session({ 
+    name: "userSession",       
     secret: "yhrox",
     resave: false,
     saveUninitialized: false,
     cookie: {
         maxAge: 1000 * 60 * 60
     },
-    store: sessionstore
+    store: sessionstore,
+    unset: "destroy"
 }));
 
 // app.use([], session({
@@ -53,7 +56,7 @@ app.use(session({
 app.use("/static", express.static(path.resolve(__dirname, "public")));
 
 mongoose.plugin(require("mongoose-id"));
-var router = require("./routes")(app);
+var router = require("./routes")(app, sessionstore);
 
 mongoose.Promise = global.Promise;
 mongoose.set('useFindAndModify', false);
@@ -62,7 +65,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
     () => console.log("db connected")
 ).catch((e) => console.error(e));
 
-app.use((error, req, res, next) => {    
+app.use((error, req, res, next) => {  
+    console.log(error);      
     res.status(error.code).json(error.message);
 });
 

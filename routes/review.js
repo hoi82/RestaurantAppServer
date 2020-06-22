@@ -12,10 +12,9 @@ module.exports = (app = require("express")()) => {
                 resolve({sum: sum, len: len});
             });
         })        
-    }
+    };
 
-    //Get Reviews by restaurant ID (Include Reviewer Name)
-    app.get("/api/restaurant/:id/reviews", (req, res) => {        
+    const getReviewsAndRatingByRestaurant = (req, res) => {
         Reviews.find({ resID: req.params.id, deleted: false }, [], {
             skip: Number(req.query.page) * Number(req.query.len),
             limit: Number(req.query.len),
@@ -38,7 +37,7 @@ module.exports = (app = require("express")()) => {
                 })
             });
 
-            Promise.all(promises).then((results) => {
+            Promise.all(promises).then((results) => {                
                 getReviewRatings(req.params.id).then((rating) => {
                     res.json({
                         totalReviews: rating.len,
@@ -48,6 +47,11 @@ module.exports = (app = require("express")()) => {
                 });                
             });
         })   
+    }
+
+    //Get Reviews by restaurant ID (Include Reviewer Name)
+    app.get("/api/restaurant/:id/reviews", (req, res) => {        
+        getReviewsAndRatingByRestaurant(req, res);
     });
 
     //Add Review
@@ -86,13 +90,13 @@ module.exports = (app = require("express")()) => {
     });
 
     //Delete Review
-    app.delete("/api/review", (req, res) => {                
-        Reviews.findByIdAndUpdate(req.body.id, {deleted: true}, (err, rev) => {
+    app.delete("/api/review/:id", (req, res) => {                
+        Reviews.findByIdAndUpdate(req.params.id, {deleted: true}, (err, rev) => {
             if (err) {
                 res.status(404).json(err);
             }
             else {
-                res.json(rev);
+                res.json(rev);                
             }
         })
     });
