@@ -113,7 +113,8 @@ module.exports = (app = require("express")()) => {
                             const index = user.favorite.findIndex((item) => item.equals(id));
                             console.log("favorite before : ", user.favorite);
                             console.log("index : ", index);
-                            if (index != -1)
+                            //splice 시에 index가 0이면 리스트 전체를 수정함, 이때는 길이까지 지정해야될듯
+                            if (index > -1)
                                 user.favorite.splice(index, 1);                                
                         });
 
