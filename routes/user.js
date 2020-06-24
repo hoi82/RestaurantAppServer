@@ -13,8 +13,7 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
     });
 
     //Login
-    app.post("/api/users/login/", (req, res) => { 
-        console.log(req.body);                                      
+    app.post("/api/users/login/", (req, res) => {                                         
         User.findOne({ email: req.body.email }, (err, user) => {
             if (err) {
                 return res.status(500).json({ error: err });
@@ -24,27 +23,20 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
                 return res.status(404).send("user not found");
             }
             else {
-                User.findOne({password: req.body.password}, (err, user) => {
-                    if (err) {
-                        return res.status(500).json({ error: err });
-                    }
-
-                    if (!user) {
-                        return res.status(403).send("password is not right");
-                    }
-                    else {
-                        let session = req.session;            
-                        session.user = {
-                            sid: req.sessionID,
-                            id: user.id,
-                            email: user.email,
-                            name: user.name,
-                            lastAccess: new Date()
-                        };
-                        console.log(user);                                    
-                        res.json(session.user); 
-                    }
-                })
+                if (user.password == req.body.password) {
+                    let session = req.session;            
+                    session.user = {
+                        sid: req.sessionID,
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        lastAccess: new Date()
+                    };                                                      
+                    res.json(session.user); 
+                }
+                else {
+                    return res.status(403).send("password is not right");
+                }                
             }            
         });             
     });

@@ -31,11 +31,9 @@ module.exports = (app = require("express")()) => {
 
                             }
                             else {
-                                user.favorite.push(req.body.resid);
+                                user.favorite.push(req.body.resid);                                
                                 user.save((err, u) => {
-                                    if (err) {
-                                        console.log(err.message);
-                                        console.log(err.stack);
+                                    if (err) {                                        
                                         next({code: 402, message: "An Error is occured in saving."})
                                     } 
                                     else {
@@ -77,7 +75,7 @@ module.exports = (app = require("express")()) => {
     //Favorite Restaurant Thumbnails
     app.get("/api/favorite/restaurants", (req, res, next) => {
         if (req.session.user) {    
-            User.findById(req.session.user.id).populate("favorite").exec((err, user) => {     
+            User.findById(req.session.user.id).populate("favorite").exec((err, user) => {                  
                 if (user) {
                     res.json(user.favorite.map((restaurant, i) => {
                         // id가 아니라 _id를 사용하고 있음
@@ -110,15 +108,11 @@ module.exports = (app = require("express")()) => {
                 else {                    
                     if (user) {
                         req.body.forEach(id => {                            
-                            const index = user.favorite.findIndex((item) => item.equals(id));
-                            console.log("favorite before : ", user.favorite);
-                            console.log("index : ", index);
+                            const index = user.favorite.findIndex((item) => item.equals(id));                            
                             //splice 시에 index가 0이면 리스트 전체를 수정함, 이때는 길이까지 지정해야될듯
                             if (index > -1)
                                 user.favorite.splice(index, 1);                                
-                        });
-
-                        console.log("favorites : ", user.favorite);
+                        });                        
                         
                         user.save((err, user) => {
                             res.json(user.favorite);

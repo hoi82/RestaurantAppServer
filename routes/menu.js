@@ -12,4 +12,15 @@ module.exports = (app = require("express")()) => {
             }            
         })
     });   
+
+    app.get("/api/menu/:id", (req, res) => {
+        Menu.findById(req.params.id, (err, menu) => {
+            if (err) {
+
+            }
+            else {
+                res.json(menu);
+            }
+        })
+    })
 }
