@@ -6,6 +6,7 @@ module.exports = (app, sessionStore) => {
     const menu = require("./menu")(app);       
     const reservation = require("./reservation")(app);
     const favorite = require("./favorite")(app);
+    const takeout = require("./takeout")(app);
 
     return app;
 }

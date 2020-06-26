@@ -22,5 +22,17 @@ module.exports = (app = require("express")()) => {
                 res.json(menu);
             }
         })
+    });
+
+    //Get Take Out menus by Restaurant ID
+    app.get("/api/takeouts/:id", (req, res) => {        
+        Menu.find({restaurantID: req.params.id, takeout: true}, (err, menus) => {
+            if (err) {
+
+            }
+            else { 
+                res.json(menus);
+            }
+        })
     })
 }
