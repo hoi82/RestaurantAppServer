@@ -13,15 +13,13 @@ module.exports = (app = require("express")()) => {
 
     //Get Restaurant by ID
     app.get("/api/restaurant/:id", (req, res) => {                
-        Restaurants.findById(req.params.id, (err, restaurant) => {
-            setTimeout(() => {
-                if (err) {
-                    
-                }
-                else {
-                    res.json(restaurant);
-                }
-            }, 500);            
+        Restaurants.findById(req.params.id, (err, restaurant) => {            
+            if (err) {
+                
+            }
+            else {
+                res.json(restaurant);
+            }
         })
     });
 

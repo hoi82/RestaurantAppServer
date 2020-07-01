@@ -6,6 +6,7 @@ const ReservationSchema = new Schema({
     userid: Schema.Types.ObjectId,
     start: Schema.Types.Date,
     end: Schema.Types.Date,
+    timezone: Schema.Types.String,
     member: Schema.Types.Number,
     message: Schema.Types.String,
     created: Schema.Types.Date,

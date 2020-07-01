@@ -20,6 +20,10 @@ module.exports = (app = require("express")()) => {
             limit: Number(req.query.len),
             sort: "-created"            
         }, (err, reviews) => {
+            if (err) {
+                return;
+            }
+            
             const promises = reviews.map((r, i) => (r.toObject())).map((r, i) => {
                 return new Promise((resolve, reject) => {
                     Users.findById(r.userID, (err, user) => {

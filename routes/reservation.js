@@ -49,13 +49,15 @@ module.exports = (app = require("express")()) => {
         reservation.userid = req.body.userid;
         reservation.start = req.body.start;        
         reservation.end = req.body.end;
+        reservation.timezone = req.body.timezone;
         reservation.member = req.body.member;
         reservation.message = req.body.message;
         reservation.created = new Date();
         reservation.edited = new Date();
         reservation.deleted = false;
         reservation.save({validateBeforeSave: true}, (err, p) => {
-            if (err) {                
+            if (err) {   
+                console.log(err.stack);             
                 res.json(err)
             }
             else {     
@@ -64,13 +66,13 @@ module.exports = (app = require("express")()) => {
         })
     });
 
-    //Get Reservations by userID
+    //Get Single Reservation
     app.get("/api/reservation/:id", (req, res) => {        
         Reservations.findOne({_id: req.params.id, deleted: false} ,"start end member message resid" ,(err, reservation) => {
             if (err) {
 
             }
-            else {
+            else {                
                 Restaurants.findById(reservation.resid, "name address", (err, restaurant) => {
                     if (err) {
 
@@ -92,4 +94,16 @@ module.exports = (app = require("express")()) => {
             }
         })
     });
+
+    //Get Reservations by id
+    app.get("/api/reservations/:id", (req, res) => {        
+        Reservations.find({userid: req.params.id, deleted: false}, (err, reservations) => {
+            if (err) {
+
+            }
+            else {
+                res.json(reservations);
+            }
+        });
+    })
 }

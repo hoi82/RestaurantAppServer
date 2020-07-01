@@ -75,7 +75,12 @@ module.exports = (app = require("express")()) => {
     //Favorite Restaurant Thumbnails
     app.get("/api/favorite/restaurants", (req, res, next) => {
         if (req.session.user) {    
-            User.findById(req.session.user.id).populate("favorite").exec((err, user) => {                  
+            User.findById(req.session.user.id).populate("favorite").exec((err, user) => {
+                if (err) {
+                    res.status(400).json(err.message);
+                    return;
+                }
+
                 if (user) {
                     res.json(user.favorite.map((restaurant, i) => {
                         // id가 아니라 _id를 사용하고 있음
@@ -94,7 +99,8 @@ module.exports = (app = require("express")()) => {
             });            
         }
         else {
-            next(401, "You have to login first");
+            // next(401, "You have to login first");
+            res.status(401).json("You have to login first");
         }
     });
 
