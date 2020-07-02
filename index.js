@@ -66,7 +66,8 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
 ).catch((e) => console.error(e));
 
 app.use((error, req, res, next) => {  
-    console.log(error);      
+    console.log(error); 
+    console.log("code : ", error.code);     
     res.status(error.code).json(error.message);
 });
 

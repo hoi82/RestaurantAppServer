@@ -49,7 +49,7 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
         res.json({session: false});             
     });
 
-    //Get Session
+    //Session check
     app.get("/api/users/session", (req, res) => {                   
         if (req.session.user == undefined) {
             res.json({ session: false });

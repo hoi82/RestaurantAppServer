@@ -52,7 +52,7 @@ module.exports = (app = require("express")()) => {
             })
         }
         else {
-            next(401, "You have to login first");
+            next({code: 401, message: "You have to login first"});
         }   
     });
 
@@ -99,8 +99,8 @@ module.exports = (app = require("express")()) => {
             });            
         }
         else {
-            // next(401, "You have to login first");
-            res.status(401).json("You have to login first");
+            res.json([]);
+            // res.status(401).json("You have to login first");
         }
     });
 
