@@ -6,6 +6,8 @@ module.exports = (app = require("express")()) => {
     const Restaurants = require("../models/restaurant");
     const Menus = require("../models/menu");
 
+    //TODO: 여기부터 해야됨
+
     app.post("/api/takeout", (req, res) => {        
         const takeout = new Takeouts();
         const data = req.body;        
@@ -22,8 +24,7 @@ module.exports = (app = require("express")()) => {
             if (err) {                
                 res.status(402).json(err);
             }
-            else {
-                console.log(result._id);
+            else {                
                 res.json(result._id);
             }
         });

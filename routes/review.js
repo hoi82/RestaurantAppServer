@@ -5,6 +5,9 @@ module.exports = (app = require("express")()) => {
     const getReviewRatings = (id) => {
         return new Promise((resolve, reject) => {
             Reviews.find({ resID: id, deleted: false }, (err, res) => {
+                if (err) {
+                    reject(err);
+                }
                 const sum = res.reduce((acc, cur, i) => (
                     acc + cur.rating
                 ), 0);
@@ -14,14 +17,14 @@ module.exports = (app = require("express")()) => {
         })        
     };
 
-    const getReviewsAndRatingByRestaurant = (req, res) => {
+    const getReviewsAndRatingByRestaurant = (req, res, next) => {
         Reviews.find({ resID: req.params.id, deleted: false }, [], {
             skip: Number(req.query.page) * Number(req.query.len),
             limit: Number(req.query.len),
             sort: "-created"            
         }, (err, reviews) => {
             if (err) {
-                return;
+                return next(err);
             }
             
             const promises = reviews.map((r, i) => (r.toObject())).map((r, i) => {
@@ -30,13 +33,12 @@ module.exports = (app = require("express")()) => {
                         if (err) {
                             reject(err);
                         }
-                        else {
-                            if (user) {
-                                r.userName = user.name;
-                            }
+                        
+                        if (user) {
+                            r.userName = user.name;
+                        }
 
-                            resolve(r);
-                        }                        
+                        resolve(r);
                     })
                 })
             });
@@ -49,17 +51,19 @@ module.exports = (app = require("express")()) => {
                         reviews: results
                     });
                 });                
+            }).catch((err) => {
+                return next(err);
             });
         })   
     }
 
     //Get Reviews by restaurant ID (Include Reviewer Name)
-    app.get("/api/restaurant/:id/reviews", (req, res) => {        
-        getReviewsAndRatingByRestaurant(req, res);
+    app.get("/api/restaurant/:id/reviews", (req, res, next) => {        
+        getReviewsAndRatingByRestaurant(req, res, next);
     });
 
     //Add Review
-    app.post("/api/review", (req, res) => {        
+    app.post("/api/review", (req, res, next) => {        
         const review = new Reviews();
         review.resID = req.body.resid;
         review.userID = req.session.user.id;
@@ -71,21 +75,20 @@ module.exports = (app = require("express")()) => {
         review.deleted = false;
         review.save({validateBeforeSave: true}, (err, rv) => {
             if (err) {
-                res.json(err);                
+                return next(err);  
             }
-            else {
-                
+            else {                
                 res.json(rv);
             }
         })        
     });
 
     //Edit Review
-    app.put("/api/review/:id", (req, res) => {        
+    app.put("/api/review/:id", (req, res, next) => {        
         const edit = Object.assign({}, req.body, {edited: new Date()});
         Reviews.findByIdAndUpdate(req.params.id, edit, (err, rev) => {
             if (err) {
-                res.status(404).json(err);
+                return next(err);
             }
             else {
                 res.json(rev);
@@ -94,10 +97,10 @@ module.exports = (app = require("express")()) => {
     });
 
     //Delete Review
-    app.delete("/api/review/:id", (req, res) => {                
+    app.delete("/api/review/:id", (req, res, next) => {                
         Reviews.findByIdAndUpdate(req.params.id, {deleted: true}, (err, rev) => {
             if (err) {
-                res.status(404).json(err);
+                return next(err);
             }
             else {
                 res.json(rev);                
@@ -106,10 +109,10 @@ module.exports = (app = require("express")()) => {
     });
 
     //Get Single Review
-    app.get("/api/review/:id", (req, res) => {
+    app.get("/api/review/:id", (req, res, next) => {
         Reviews.findById(req.params.id, (err, rev) => {
             if (err) {
-                res.status(404).json(err);
+                return next(err);
             }
             else {
                 res.json(rev);

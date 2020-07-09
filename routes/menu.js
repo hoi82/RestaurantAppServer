@@ -1,38 +1,36 @@
 module.exports = (app = require("express")()) => {
     const Menu = require("../models/menu");  
     
-    //Get Menu by Restaurant ID
-    app.get("/api/menus/:id", (req, res) => {
+    //Get Menus by Restaurant ID
+    app.get("/api/menus/:id", (req, res, next) => {
         Menu.find({restaurantID: req.params.id}, (err, menus) => {
             if (err) {
-
-            }
-            else {
-                res.json(menus);
+                return next(err);
             }            
+
+            res.json(menus);            
         })
     });   
 
-    app.get("/api/menu/:id", (req, res) => {
+    //Get Single Menu
+    app.get("/api/menu/:id", (req, res, next) => {
         Menu.findById(req.params.id, (err, menu) => {
             if (err) {
+                return next(err);
+            }            
 
-            }
-            else {
-                res.json(menu);
-            }
+            res.json(menu);            
         })
     });
 
     //Get Take Out menus by Restaurant ID
-    app.get("/api/menus/takeout/:id", (req, res) => {        
+    app.get("/api/menus/takeout/:id", (req, res, next) => {        
         Menu.find({restaurantID: req.params.id, takeout: true}, (err, menus) => {
             if (err) {
+                return next(err);
+            }
 
-            }
-            else { 
-                res.json(menus);
-            }
+            res.json(menus);            
         })
     })
 }

@@ -4,8 +4,8 @@ const Schema = mongoose.Schema;
 const ReservationSchema = new Schema({
     resid: Schema.Types.ObjectId,
     userid: Schema.Types.ObjectId,
-    start: Schema.Types.Date,
-    end: Schema.Types.Date,
+    time: Schema.Types.Date,   
+    name: Schema.Types.String, 
     timezone: Schema.Types.String,
     member: Schema.Types.Number,
     message: Schema.Types.String,
@@ -13,5 +13,7 @@ const ReservationSchema = new Schema({
     edited: Schema.Types.Date,
     deleted: Schema.Types.Boolean    
 }, {collection: "reservations"});
+
+ReservationSchema.index({resid: 1, time: 1}, {unique: true});
 
 module.exports = mongoose.model("Reservations", ReservationSchema);

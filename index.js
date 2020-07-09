@@ -22,7 +22,10 @@ const corsOption = {
 var sessionstore = new mongoDBStore({
     uri: process.env.MONGO_URI,
     collection: "sessions",    
-}, (err) => console.log("error : " + err));
+}, (err) => {
+    if (err)
+        console.log("error : " + err)
+});
 
 app.use(morgan("dev"));
 
@@ -61,14 +64,13 @@ var router = require("./routes")(app, sessionstore);
 mongoose.Promise = global.Promise;
 mongoose.set('useFindAndModify', false);
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }).then(
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }).then(
     () => console.log("db connected")
 ).catch((e) => console.error(e));
 
 app.use((error, req, res, next) => {  
-    console.log(error); 
-    console.log("code : ", error.code);     
-    res.status(error.code).json(error.message);
+    console.log(error);          
+    res.json({error});
 });
 
 var server = app.listen(port, () => console.log(`Server is running on port ${port}`));

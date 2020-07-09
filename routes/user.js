@@ -2,25 +2,25 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
     const User = require("../models/user");   
 
     //Get all users
-    app.get("/api/users", (req, res) => {           
+    app.get("/api/users", (req, res, next) => {           
         User.find((err, users) => {
-            if (err) {
-                return res.status(500).send({ error: "db failure" });                
-            }
+            if (err) {                
+                next(err);
+            }            
 
             res.json(users);
         });        
     });
 
     //Login
-    app.post("/api/users/login/", (req, res) => {                                         
+    app.post("/api/users/login/", (req, res, next) => {                                         
         User.findOne({ email: req.body.email }, (err, user) => {
             if (err) {
-                return res.status(500).json({ error: err });
+                next(err);
             }            
             
             if (!user) {
-                return res.status(404).send("user not found");
+                next({code: "NO_USER"});
             }
             else {
                 if (user.password == req.body.password) {
@@ -35,7 +35,7 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
                     res.json(session.user); 
                 }
                 else {
-                    return res.status(403).send("password is not right");
+                    next({code: "WRONG_PASSWORD"})
                 }                
             }            
         });             
@@ -46,7 +46,7 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
         if (req.session.user) {            
             sessionStore.destroy(req.session.user.sid);
         }
-        res.json({session: false});             
+        res.json();
     });
 
     //Session check
@@ -64,11 +64,11 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
     app.get("/api/users/email/:email", (req, res) => {
         User.findOne({ email: req.params.email }, { _id: 0, name: 1 }, (err, user) => {
             if (err) {
-                return res.status(500).json({ error: err });
+                return next(err);                
             }
 
             if (!user) {
-                return res.status(404).json({ error: "user not found" });
+                return next({code: "NO_USER"});                
             }
 
             res.json(user);
@@ -79,11 +79,11 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
     app.get("/api/users/name/:name", (req, res) => {
         User.findOne({ name: req.params.name }, { _id: 0, email: 1 }, (err, user) => {            
             if (err) {
-                return res.status(500).json({ error: err });
+                return next(err);                
             }
 
             if (!user) {
-                return res.status(404).json({ error: "user not found" });
+                return next({code: "NO_USER"});                
             }
 
             res.json(user);
@@ -91,14 +91,18 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
     });
 
     //Get User Name
-    app.get("/api/user/:id/name", (req, res) => {
+    app.get("/api/user/:id/name", (req, res, next) => {
         User.findById(req.params.id).distinct("name", (err, name) => {
+            if (err) {
+                next(err);
+            }
+
             res.json(name);
         })
     })
 
     //Create user
-    app.post("/api/users", (req, res) => {          
+    app.post("/api/users", (req, res, next) => {          
         let user = new User();
         user.email = req.body.email;
         user.password = req.body.password;
@@ -109,23 +113,23 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
         
         user.save((err) => {
             if (err) {                
-                res.json({ success: false, message: err.code });
+                next(err);
             }
             else {
-                res.json({ success: true });
+                res.json();
             }            
         });     
     });
 
     //Update user
-    app.put("/api/users/:user_id", (req, res) => {
+    app.put("/api/users/:user_id", (req, res, next) => {
         User.findById(req.params.user_id, (err, user) => {
-            if (err) {
-                return res.status(500).json({ error: "db failed" });
+            if (err) {                
+                next(err);
             }
 
             if (!user) {
-                return res.status(404).json({ error: "user not found" });
+                next({code: "NO_USER"});
             }
 
             if (req.body.password) user.password = req.body.password;
@@ -135,7 +139,7 @@ module.exports = (app = require("express")(), sessionStore = require("connect-mo
             if (req.body.payments) user.payments = req.body.payments;
             
             user.save((err) => {
-                if (err) return res.status(500).json({error: "failed to update"});
+                if (err) next(err);
                 res.json({ message: "user updated" });
             })
         })
