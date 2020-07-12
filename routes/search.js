@@ -66,7 +66,7 @@ module.exports = (app = require("express")()) => {
     //Get States By Country
     app.get("/api/filter/states", (req, res, next) => {        
         Location.findOne().where("name").equals(req.query.country).then((country) => {
-            res.json(country.states);
+            res.json(country.states.map((state) => state.name));
         }).catch((err) => {
             next(err);
         });

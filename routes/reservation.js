@@ -104,7 +104,7 @@ module.exports = (app = require("express")()) => {
                     const result = {
                         time: reservation.time,  
                         username: reservation.name,                      
-                        member: reservation.member,
+                        member: reservation.member,                        
                         message: reservation.message,
                         resname: restaurant.name,
                         resaddress: restaurant.address,
