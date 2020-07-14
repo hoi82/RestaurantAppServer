@@ -20,8 +20,7 @@ module.exports = (app = require("express")()) => {
         Restaurants.findById(req.params.id, (err, restaurant) => {            
             if (err) {
                 return next(err);
-            }
-            
+            }            
             res.json(restaurant);
         })
     });
