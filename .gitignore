@@ -107,3 +107,6 @@ dist
 
 # cache file
 cache/
+
+.env
+.env.*
