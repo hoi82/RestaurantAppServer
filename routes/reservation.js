@@ -22,17 +22,17 @@ module.exports = (app = require("express")()) => {
                 minute: 0,
                 second: 0,
                 millisecond: 0
-            });
+            });            
             
             const qEnd = qStart.clone().set({hour:24});                            
             reservationInfo.cancellation = restaurant.reservation;                
             Reservations.find({
                 deleted: false, 
-                time: { $gte: qStart.utc().toDate(), $lte: qEnd.utc().toDate() },
+                time: { $gte: qStart.clone().utc().toDate(), $lte: qEnd.clone().utc().toDate() },
                 resid: restaurant._id}, (err, reservations) => {                    
                     if (err) {
                         return next(err);
-                    }                                        
+                    }                    
                     
                     res.json({                                                
                         available: restaurant.opens.time[qStart.day()].map((item) => ({
@@ -120,14 +120,32 @@ module.exports = (app = require("express")()) => {
         })
     });
 
-    //Get Reservations by id
+    //Get Reservations by user ID
     app.get("/api/reservations/:id", (req, res, next) => {        
         Reservations.find({userid: req.params.id, deleted: false}, (err, reservations) => {
             if (err) {
                 next(err);
             }
             
-            res.json(reservations);
+            const promises = reservations.map((reservation, i) => {
+                return new Promise(async (resolve, reject) => {
+                    const restaurant = await Restaurants.findById(reservation.resid);
+                    if (restaurant) {
+                        const result = reservation.toObject();
+                        resolve({
+                            ...result,
+                            restaurantThumbnail: restaurant.thumbnail,
+                            restaurantName: restaurant.name,
+                            restaurantAddress: restaurant.address
+                        });
+                    }
+                    else {
+                        reject("NO_RESTAURANT");
+                    }                    
+                })
+            });
+
+            Promise.all(promises).then((value) => res.json(value));             
         });
     })
 }

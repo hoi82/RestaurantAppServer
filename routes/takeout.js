@@ -68,14 +68,32 @@ module.exports = (app = require("express")()) => {
         })
     });
 
-    app.get("/api/takeouts/:id", (req, res) => {        
+    //Get Takeout List by User ID
+    app.get("/api/takeouts/:id", (req, res, next) => {        
         Takeouts.find({userid: req.params.id, deleted: false}, (err, takeouts) => {            
             if (err) {
+                return next(err);
+            }
+            
+            const promises = takeouts.map((takeout, i) => {
+                return new Promise(async (resolve, reject) => {
+                    const restaurant = await Restaurant.findById(takeout.resid);
+                    if (restaurant) {
+                        const result = takeout.toObject();
+                        resolve({
+                            ...result,
+                            restaurantThumbnail: restaurant.thumbnail,
+                            restaurantName: restaurant.name,
+                            restaurantAddress: restaurant.address
+                        });
+                    }
+                    else {
+                        reject("NO_RESTAURANT");
+                    }
+                })
+            });
 
-            }
-            else {
-                res.json(takeouts);
-            }
+            Promise.all(promises).then((value) => res.json(value));            
         })
     })
 }
